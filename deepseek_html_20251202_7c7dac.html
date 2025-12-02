@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watcham Bot</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Monetag Ads Script - আপনার দেওয়া সঠিক স্ক্রিপ্ট -->
+    <script src='//libtl.com/sdk.js' data-zone='9883697' data-sdk='show_9883697'></script>
+    <style>
+        :root {
+            --primary: #4cc9f0;
+            --secondary: #4361ee;
+            --dark: #1a1a2e;
+            --darker: #16213e;
+            --success: #4ade80;
+            --danger: #f87171;
+            --warning: #fbbf24;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 16px;
+            font-size: 15px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .bot-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+        }
+        
+        .user-name {
+            font-size: 14px;
+            color: #aaa;
+            font-weight: 500;
+        }
+        
+        .balance-card {
+            background: linear-gradient(135deg, var(--secondary) 0%, #3a0ca3 100%);
+            border-radius: 16px;
+            padding: 24px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 12px 24px rgba(67, 97, 238, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite linear;
+        }
+        
+        @keyframes shine {
+            0% { transform: rotate(45deg) translateX(-100%); }
+            100% { transform: rotate(45deg) translateX(100%); }
+        }
+        
+        .balance-label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .balance-amount {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .balance-unit {
+            font-size: 15px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .rate-info {
+            font-size: 12px;
+            color: var(--success);
+            margin-top: 8px;
+            font-weight: 500;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .menu-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 16px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .menu-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .menu-item:hover::after {
+            opacity: 1;
+        }
+        
+        .menu-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .menu-text {
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .section-title {
+            font-size: 17px;
+            margin-bottom: 18px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+        
+        .referral-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .referral-box {
+            background: linear-gradient(135deg, rgba(76, 201, 240, 0.1), rgba(67, 97, 238, 0.1));
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+            margin-bottom: 16px;
+        }
+        
+        .referral-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        
+        .referral-link {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 12px;
+            word-break: break-all;
+            margin-bottom: 12px;
+            border: 1px dashed rgba(255,255,255,0.2);
+        }
+        
+        .input-group {
+            margin-bottom: 16px;
+        }
+        
+        .input-label {
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.07);
+            color: white;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.1);
+        }
+        
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .payment-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .payment-method {
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            border: 1px solid transparent;
+        }
+        
+        .payment-method.active {
+            background: rgba(76, 201, 240, 0.15);
+            border: 1px solid var(--primary);
+        }
+        
+        .payment-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .info-item {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .energy-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .energy-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 5px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            padding: 4px;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 8px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .tab.active {
+            background: rgba(76, 201, 240, 0.2);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .job-item {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+        }
+        
+        .job-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .job-info {
+            flex: 1;
+        }
+        
+        .job-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        
+        .job-desc {
+            font-size: 12px;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+        
+        .job-reward {
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 700;
+            margin-left: 12px;
+        }
+        
+        .job-btn {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+        
+        .job-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(67, 97, 238, 0.4);
+        }
+        
+        .job-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .history-item {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .history-date {
+            font-size: 11px;
+            opacity: 0.6;
+        }
+        
+        .history-amount {
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        .history-amount.positive {
+            color: var(--success);
+        }
+        
+        .history-amount.negative {
+            color: var(--danger);
+        }
+        
+        .ad-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            text-align: center;
+            border: 1px dashed rgba(76, 201, 240, 0.3);
+        }
+        
+        .ad-label {
+            font-size: 12px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .admin-panel {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .admin-title {
+            color: var(--danger);
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        
+        .requirement-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .requirement-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--warning);
+        }
+        
+        .requirement-text {
+            font-size: 13px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        
+        .badge-danger {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+        }
+        
+        .badge-success {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+        }
+        
+        /* Monetag Ad Overlay */
+        .monetag-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .monetag-ad-container {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .monetag-close {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Monetag Ad Overlay (Hidden by default) -->
+    <div class="monetag-overlay" id="monetag-overlay">
+        <div class="monetag-ad-container" id="monetag-ad-container">
+            <!-- Monetag ad will load here -->
+        </div>
+        <button class="monetag-close" onclick="closeMonetagAd()">Close Ad</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="bot-name">Watcham Bot</div>
+            <div class="user-name">@Sobuj_boy_Ti</div>
+        </div>
+        
+        <div class="balance-card">
+            <div class="balance-label">Your Balance</div>
+            <div class="balance-amount" id="balance-amount">17.10</div>
+            <div class="balance-unit">HMSTR</div>
+            <div class="rate-info">💵 1 HMSTR = 2 BDT</div>
+        </div>
+        
+        <!-- Monetag Ad Container -->
+        <div class="ad-container">
+            <div class="ad-label">Click "Earn" to watch ads and earn HMSTR</div>
+            <div id="monetag-ad-slot"></div>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tab active" data-tab="dashboard">Dashboard</div>
+            <div class="tab" data-tab="earn">Earn</div>
+            <div class="tab" data-tab="withdraw">Withdraw</div>
+            <div class="tab" data-tab="profile">Profile</div>
+        </div>
+        
+        <!-- Dashboard Page -->
+        <div class="page active" id="dashboard">
+            <div class="menu-grid">
+                <div class="menu-item" data-action="earn">
+                    <div class="menu-icon">💰</div>
+                    <div class="menu-text">Earn HMSTR</div>
+                </div>
+                <div class="menu-item" data-action="withdraw">
+                    <div class="menu-icon">🏦</div>
+                    <div class="menu-text">Withdraw</div>
+                </div>
+                <div class="menu-item" data-action="referral">
+                    <div class="menu-icon">👥</div>
+                    <div class="menu-text">Referral</div>
+                </div>
+                <div class="menu-item" data-action="tasks">
+                    <div class="menu-icon">📱</div>
+                    <div class="menu-text">Tasks</div>
+                </div>
+                <div class="menu-item" data-action="history">
+                    <div class="menu-icon">📊</div>
+                    <div class="menu-text">History</div>
+                </div>
+                <div class="menu-item" data-action="support">
+                    <div class="menu-icon">🆘</div>
+                    <div class="menu-text">Support</div>
+                </div>
+            </div>
+            
+            <!-- Referral Stats -->
+            <div class="section">
+                <div class="section-title">
+                    <span>Referral System</span>
+                    <span class="badge">Free Earning</span>
+                </div>
+                
+                <div class="referral-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Total Referrals</div>
+                        <div class="stat-value" id="total-referrals">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Required</div>
+                        <div class="stat-value" id="required-referrals">20</div>
+                    </div>
+                </div>
+                
+                <div class="requirement-box">
+                    <div class="requirement-title">⚠️ Withdrawal Requirement</div>
+                    <div class="requirement-text">
+                        You need at least <strong>20 referrals</strong> to withdraw your earnings. 
+                        Share your referral link to complete this requirement.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Available Jobs -->
+            <div class="section">
+                <div class="section-title">
+                    <span>Watch Ads & Earn</span>
+                    <span>📺</span>
+                </div>
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-title">Watch Video Ad</div>
+                        <div class="job-desc">Watch a short video advertisement</div>
+                    </div>
+                    <button class="job-btn" onclick="showMonetagAd()">Watch & Earn 0.5 HMSTR</button>
+                </div>
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-title">Complete Survey</div>
+                        <div class="job-desc">Complete a short survey</div>
+                    </div>
+                    <button class="job-btn" onclick="showMonetagAd()">Earn 1.0 HMSTR</button>
+                </div>
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-title">Install App</div>
+                        <div class="job-desc">Install and open recommended app</div>
+                    </div>
+                    <button class="job-btn" onclick="showMonetagAd()">Earn 2.0 HMSTR</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Earn Page -->
+        <div class="page" id="earn">
+            <div class="section">
+                <div class="section-title">
+                    <span>Earn HMSTR</span>
+                    <span>💰</span>
+                </div>
+                
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-title">Watch Video Ad</div>
+                        <div class="job-desc">Watch a short video advertisement</div>
+                    </div>
+                    <button class="job-btn" onclick="showMonetagAd()">Watch & Earn 0.5 HMSTR</button>
+                </div>
+                
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-title">Complete Survey</div>
+                        <div class="job-desc">Complete a short survey</div>
+                    </div>
+                    <button class="job-btn" onclick="showMonetagAd()">Earn 1.0 HMSTR</button>
+                </div>
+                
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-title">Install App</div>
+                        <div class="job-desc">Install and open recommended app</div>
+                    </div>
+                    <button class="job-btn" onclick="showMonetagAd()">Earn 2.0 HMSTR</button>
+                </div>
+                
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-title">Sign Up Offer</div>
+                        <div class="job-desc">Sign up for partner service</div>
+                    </div>
+                    <button class="job-btn" onclick="showMonetagAd()">Earn 3.0 HMSTR</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Withdraw Page -->
+        <div class="page" id="withdraw">
+            <div class="section">
+                <div class="section-title">
+                    <span>Withdraw Funds</span>
+                    <span>💰</span>
+                </div>
+                
+                <div class="requirement-box" id="withdrawal-warning" style="display: none;">
+                    <div class="requirement-title">❌ Withdrawal Not Available</div>
+                    <div class="requirement-text">
+                        You need <strong id="remaining-refs">20</strong> more referrals to withdraw. 
+                        Share your referral link to complete this requirement.
+                    </div>
+                </div>
+                
+                <div id="withdrawal-form">
+                    <div class="input-group">
+                        <label class="input-label">Amount (HMSTR)</label>
+                        <input type="number" class="input-field" placeholder="Enter amount" id="withdraw-amount">
+                        <div style="font-size: 12px; margin-top: 8px; opacity: 0.7;">Minimum: 199 HMSTR (398 BDT)</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Withdrawal Mobile Number</label>
+                        <input type="text" class="input-field" placeholder="Enter your mobile number" id="withdraw-address">
+                        <div style="font-size: 12px; margin-top: 8px; opacity: 0.7;">Enter your mobile number for selected payment method</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Payment Method</label>
+                        <div class="payment-methods">
+                            <div class="payment-method active" data-method="bkash">
+                                <div class="payment-icon" style="background: #e2136e; color: white;">B</div>
+                                <div>Bkash Wallet</div>
+                            </div>
+                            <div class="payment-method" data-method="nagad">
+                                <div class="payment-icon" style="background: #e30d17; color: white;">N</div>
+                                <div>Nagad Wallet</div>
+                            </div>
+                            <div class="payment-method" data-method="rocket">
+                                <div class="payment-icon" style="background: #592c8c; color: white;">R</div>
+                                <div>Rocket Wallet</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <div style="background: rgba(76, 201, 240, 0.1); padding: 16px; border-radius: 12px; font-size: 14px; border: 1px solid rgba(76, 201, 240, 0.2);">
+                            <strong style="color: var(--primary);">💸 Conversion Rate:</strong><br>
+                            1 HMSTR = 2 BDT<br>
+                            <strong style="color: var(--primary);">💰 Minimum Withdrawal:</strong> 199 HMSTR = 398 BDT
+                        </div>
+                    </div>
+                    
+                    <button class="btn" id="withdraw-btn" onclick="processWithdrawal()">Withdraw Now</button>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>Withdrawal History</span>
+                    <span>📊</span>
+                </div>
+                <div id="withdrawal-history">
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-title">Withdrawal to Bkash</div>
+                            <div class="history-date">2023-10-15 14:30</div>
+                        </div>
+                        <div class="history-amount negative">-50.00 HMSTR</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-title">Withdrawal to Nagad</div>
+                            <div class="history-date">2023-10-10 09:15</div>
+                        </div>
+                        <div class="history-amount negative">-100.00 HMSTR</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Page -->
+        <div class="page" id="profile">
+            <div class="section">
+                <div class="section-title">
+                    <span>User Profile</span>
+                    <span>👤</span>
+                </div>
+                
+                <div class="balance-card" style="margin-bottom: 20px;">
+                    <div class="balance-label">Current Balance</div>
+                    <div class="balance-amount" id="current-balance">17.10</div>
+                    <div class="balance-unit">HMSTR</div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">User ID</div>
+                        <div class="info-value" id="user-id">N/A</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Chat ID</div>
+                        <div class="info-value" id="chat-id">1249400464</div>
+                    </div>
+                </div>
+                
+                <div class="info-item" style="margin-top: 15px; grid-column: 1 / -1;">
+                    <div class="info-label">Energy</div>
+                    <div class="info-value">Full Power</div>
+                    <div class="energy-bar">
+                        <div class="energy-fill"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Referral Section -->
+            <div class="section">
+                <div class="section-title">
+                    <span>Referral System</span>
+                    <span class="badge">Free Earning</span>
+                </div>
+                
+                <div class="referral-box">
+                    <div class="referral-title">Your Referral Link</div>
+                    <div class="referral-link" id="referral-link-text">
+                        https://t.me/free_earning_bot?start=ref_123456
+                    </div>
+                    <button class="btn btn-secondary" onclick="copyReferralLink()">Copy Referral Link</button>
+                </div>
+                
+                <div class="referral-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Total Referrals</div>
+                        <div class="stat-value" id="profile-total-referrals">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Required</div>
+                        <div class="stat-value" id="profile-required-referrals">20</div>
+                    </div>
+                </div>
+                
+                <div class="requirement-box">
+                    <div class="requirement-title">📢 Requirement for Withdrawal</div>
+                    <div class="requirement-text">
+                        Complete <strong>20 referrals</strong> to unlock withdrawal feature. 
+                        Share your referral link with friends and earn together!
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Transaction History -->
+            <div class="section">
+                <div class="section-title">
+                    <span>Transaction History</span>
+                    <span>📊</span>
+                </div>
+                <div id="transaction-history">
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-title">Watched Ad</div>
+                            <div class="history-date">2023-10-20 11:45</div>
+                        </div>
+                        <div class="history-amount positive">+0.50 HMSTR</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-title">Completed Survey</div>
+                            <div class="history-date">2023-10-19 16:20</div>
+                        </div>
+                        <div class="history-amount positive">+1.00 HMSTR</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-title">Referral Bonus</div>
+                            <div class="history-date">2023-10-18 09:30</div>
+                        </div>
+                        <div class="history-amount positive">+2.00 HMSTR</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin Panel -->
+            <div class="admin-panel" id="admin-panel" style="display: none;">
+                <div class="admin-title">Admin Panel</div>
+                <button class="btn btn-secondary" onclick="showAdminStats()">View Statistics</button>
+                <button class="btn" style="margin-top: 12px; background: linear-gradient(135deg, #f87171, #ef4444);" onclick="broadcastMessage()">Broadcast Message</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Telegram Bot Configuration
+        const BOT_TOKEN = '8374781078:AAH7-DijanDeJ-9_gups1CgUDvrbAFvP1QU';
+        const ADMIN_CHAT_ID = '6568977757';
+        const HMSTR_TO_BDT_RATE = 2;
+        const REQUIRED_REFERRALS = 20;
+        
+        // Telegram Web App
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+        
+        // User data
+        let userData = {
+            balance: 17.10,
+            userId: null,
+            chatId: null,
+            username: '@Sobuj_boy_Ti',
+            referrals: 0,
+            isAdmin: false,
+            canWithdraw: false
+        };
+        
+        // Initialize app
+        function initApp() {
+            const tgUser = tg.initDataUnsafe.user;
+            
+            if (tgUser) {
+                userData.userId = tgUser.id;
+                userData.chatId = tgUser.id;
+                userData.username = `@${tgUser.username}` || 'User';
+                userData.isAdmin = (tgUser.id.toString() === ADMIN_CHAT_ID);
+                
+                document.getElementById('user-id').textContent = userData.userId || 'N/A';
+                document.getElementById('chat-id').textContent = userData.chatId || '1249400464';
+                
+                if (userData.isAdmin) {
+                    document.getElementById('admin-panel').style.display = 'block';
+                }
+            }
+            
+            updateBalance();
+            updateReferralStats();
+            checkWithdrawalEligibility();
+            initMonetagAds();
+        }
+        
+        // Update balance display
+        function updateBalance() {
+            document.getElementById('balance-amount').textContent = userData.balance.toFixed(2);
+            document.getElementById('current-balance').textContent = userData.balance.toFixed(2);
+        }
+        
+        // Update referral statistics
+        function updateReferralStats() {
+            document.getElementById('total-referrals').textContent = userData.referrals;
+            document.getElementById('profile-total-referrals').textContent = userData.referrals;
+            document.getElementById('required-referrals').textContent = REQUIRED_REFERRALS;
+            document.getElementById('profile-required-referrals').textContent = REQUIRED_REFERRALS;
+        }
+        
+        // Check if user can withdraw
+        function checkWithdrawalEligibility() {
+            const canWithdraw = userData.referrals >= REQUIRED_REFERRALS;
+            userData.canWithdraw = canWithdraw;
+            
+            const warningBox = document.getElementById('withdrawal-warning');
+            const withdrawalForm = document.getElementById('withdrawal-form');
+            const remainingRefs = REQUIRED_REFERRALS - userData.referrals;
+            
+            if (canWithdraw) {
+                warningBox.style.display = 'none';
+                withdrawalForm.style.display = 'block';
+            } else {
+                warningBox.style.display = 'block';
+                withdrawalForm.style.display = 'none';
+                document.getElementById('remaining-refs').textContent = remainingRefs;
+            }
+        }
+        
+        // Initialize Monetag Ads
+        function initMonetagAds() {
+            try {
+                if (typeof window.monetag !== 'undefined') {
+                    // Monetag SDK is loaded
+                    console.log('Monetag Ads SDK loaded successfully - Zone: 9883697');
+                    
+                    // Monetag callback when ad is loaded
+                    window.monetag.callback = function(isAdblockDetected) {
+                        if (!isAdblockDetected) {
+                            console.log('Monetag ad loaded successfully');
+                        } else {
+                            console.log('Adblock detected');
+                        }
+                    };
+                    
+                    // Show ads automatically
+                    window.monetag.start();
+                } else {
+                    console.log('Monetag SDK not found');
+                }
+            } catch (error) {
+                console.log('Monetag initialization error:', error);
+            }
+        }
+        
+        // Show Monetag Ad
+        function showMonetagAd() {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            
+            // Show loading
+            btn.textContent = 'Loading Ad...';
+            btn.disabled = true;
+            
+            // Show overlay
+            const overlay = document.getElementById('monetag-overlay');
+            overlay.style.display = 'flex';
+            
+            // Load Monetag ad
+            try {
+                if (typeof window.monetag !== 'undefined') {
+                    // Show ad in container
+                    window.monetag.showAd('monetag-ad-container');
+                    
+                    // Set timer for ad completion
+                    setTimeout(() => {
+                        completeAdView(btn, originalText);
+                    }, 10000); // 10 seconds for ad
+                } else {
+                    // Fallback if Monetag not loaded
+                    setTimeout(() => {
+                        completeAdView(btn, originalText);
+                    }, 5000);
+                }
+            } catch (error) {
+                console.log('Error showing ad:', error);
+                setTimeout(() => {
+                    completeAdView(btn, originalText);
+                }, 5000);
+            }
+        }
+        
+        // Complete ad view and give reward
+        function completeAdView(btn, originalText) {
+            // Determine reward based on button text
+            let reward = 0.5;
+            if (originalText.includes('1.0')) reward = 1.0;
+            if (originalText.includes('2.0')) reward = 2.0;
+            if (originalText.includes('3.0')) reward = 3.0;
+            
+            // Update balance
+            userData.balance += reward;
+            updateBalance();
+            
+            // Close overlay
+            document.getElementById('monetag-overlay').style.display = 'none';
+            
+            // Reset button
+            btn.textContent = originalText;
+            btn.disabled = false;
+            
+            // Show success message
+            alert(`✅ Ad completed! You earned ${reward} HMSTR (${(reward * HMSTR_TO_BDT_RATE).toFixed(2)} BDT)`);
+            
+            // Add to transaction history
+            addTransaction('Watched Ad', reward);
+        }
+        
+        // Close Monetag ad
+        function closeMonetagAd() {
+            document.getElementById('monetag-overlay').style.display = 'none';
+            event.target.disabled = false;
+            event.target.textContent = event.target.getAttribute('data-original') || 'Watch Ad';
+        }
+        
+        // Add transaction to history
+        function addTransaction(title, amount) {
+            const historyDiv = document.getElementById('transaction-history');
+            const date = new Date().toISOString().split('T')[0] + ' ' + 
+                        new Date().toLocaleTimeString('en-US', {hour12: false}).substring(0, 5);
+            
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <div class="history-info">
+                    <div class="history-title">${title}</div>
+                    <div class="history-date">${date}</div>
+                </div>
+                <div class="history-amount positive">+${amount.toFixed(2)} HMSTR</div>
+            `;
+            
+            historyDiv.insertBefore(historyItem, historyDiv.firstChild);
+        }
+        
+        // Process withdrawal
+        function processWithdrawal() {
+            if (!userData.canWithdraw) {
+                alert('❌ You need 20 referrals to withdraw!');
+                return;
+            }
+            
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            const phone = document.getElementById('withdraw-address').value;
+            const method = document.querySelector('.payment-method.active').dataset.method;
+            
+            if (!amount || !phone) {
+                alert('❌ Please fill all fields');
+                return;
+            }
+            
+            if (amount < 199) {
+                alert(`❌ Minimum withdrawal: 199 HMSTR (${199 * HMSTR_TO_BDT_RATE} BDT)`);
+                return;
+            }
+            
+            if (amount > userData.balance) {
+                alert('❌ Insufficient balance');
+                return;
+            }
+            
+            const btn = document.getElementById('withdraw-btn');
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                userData.balance -= amount;
+                updateBalance();
+                
+                const bdtAmount = amount * HMSTR_TO_BDT_RATE;
+                alert(`✅ Withdrawal submitted!\n\nAmount: ${amount} HMSTR\nBDT: ${bdtAmount}\nMethod: ${method}\nPhone: ${phone}\n\nProcessed within 24 hours.`);
+                
+                document.getElementById('withdraw-amount').value = '';
+                document.getElementById('withdraw-address').value = '';
+                btn.textContent = 'Withdraw Now';
+                btn.disabled = false;
+            }, 2000);
+        }
+        
+        // Copy referral link
+        function copyReferralLink() {
+            const link = 'https://t.me/free_earning_bot?start=ref_' + (userData.userId || 'PIALVI');
+            navigator.clipboard.writeText(link).then(() => {
+                alert('✅ Referral link copied!\n\nShare: ' + link);
+            });
+        }
+        
+        // Add referral (for testing)
+        function addReferral() {
+            if (userData.referrals < REQUIRED_REFERRALS) {
+                userData.referrals++;
+                updateReferralStats();
+                checkWithdrawalEligibility();
+                alert(`✅ Referral added! Total: ${userData.referrals}/20`);
+            }
+        }
+        
+        // Admin functions
+        function showAdminStats() {
+            alert('📊 Admin Stats:\nUsers: 1,247\nWithdrawals: 356\nTotal HMSTR: 45,672\nTotal BDT: 91,344');
+        }
+        
+        function broadcastMessage() {
+            const msg = prompt('Enter broadcast message:');
+            if (msg) alert(`📢 Broadcast: "${msg}"`);
+        }
+        
+        // Tab navigation
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // Menu actions
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const action = item.dataset.action;
+                
+                switch(action) {
+                    case 'earn':
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        document.querySelector('.tab[data-tab="earn"]').classList.add('active');
+                        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                        document.getElementById('earn').classList.add('active');
+                        break;
+                    case 'withdraw':
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        document.querySelector('.tab[data-tab="withdraw"]').classList.add('active');
+                        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                        document.getElementById('withdraw').classList.add('active');
+                        break;
+                    case 'referral':
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        document.querySelector('.tab[data-tab="profile"]').classList.add('active');
+                        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                        document.getElementById('profile').classList.add('active');
+                        break;
+                    default:
+                        alert(`Coming soon: ${action}`);
+                }
+            });
+        });
+        
+        // Payment method selection
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', () => {
+                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
+                method.classList.add('active');
+            });
+        });
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initApp);
+        
+        // Test function to add referrals (remove in production)
+        window.addTestReferral = addReferral;
+    </script>
+</body>
+</html>
